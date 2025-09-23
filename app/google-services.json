@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "213325886087",
+    "project_id": "redcarpethomesassistant",
+    "storage_bucket": "redcarpethomesassistant.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:213325886087:android:bcb6c86df149475d623e22",
+        "android_client_info": {
+          "package_name": "com.example.redcarpethomesassistant"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_NWcrq3Cx5HDeGxkREXpEoQGaMb0rJ9c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
