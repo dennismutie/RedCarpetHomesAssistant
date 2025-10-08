@@ -1,7 +1,5 @@
 package com.example.redcarpethomesassistant.ui.theme.screens.dashboard
 
-
-
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -9,6 +7,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,13 +33,13 @@ fun DashboardScreen(navController: NavController) {
             .fillMaxSize()
             .background(Color(0xFF8B0000)) // Dark red background
     ) {
-        // Red Carpet Homes icon (top, smaller for clarity)
+        // Red Carpet Homes icon (top, larger for prominence)
         Image(
             painter = painterResource(id = R.drawable.red_carpet_icon), // Add to res/drawable
             contentDescription = "Red Carpet Homes Icon",
             modifier = Modifier
-                .fillMaxWidth(0.6f)
-                .height(120.dp)
+                .fillMaxWidth(0.8f) // Increased width proportion
+                .height(150.dp) // Increased height
                 .align(Alignment.TopCenter)
                 .padding(top = 32.dp)
                 .clip(RoundedCornerShape(8.dp)),
@@ -134,7 +134,7 @@ fun DashboardScreen(navController: NavController) {
                 .background(Color(0xFFFFD700)) // Gold background
         ) {
             Icon(
-                painter = painterResource(id = R.drawable.user_avatar), // Add user avatar to res/drawable
+                imageVector = Icons.Default.Person, // Material Design profile icon
                 contentDescription = "Profile",
                 tint = Color(0xFF8B0000), // Red tint
                 modifier = Modifier.size(32.dp)
@@ -147,7 +147,7 @@ fun DashboardScreen(navController: NavController) {
             contentDescription = "Land Preview",
             modifier = Modifier
                 .fillMaxWidth()
-                .height(150.dp)
+                .height(200.dp) // Increased height for prominence
                 .align(Alignment.BottomCenter)
                 .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp, bottomEnd = 0.dp, bottomStart = 0.dp)),
             contentScale = ContentScale.Crop,

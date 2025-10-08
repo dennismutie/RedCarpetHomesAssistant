@@ -192,15 +192,15 @@ fun HomeScreen(navController: NavController) {
                         )
 
                         // Stats from Website - Updated labels to match exactly
-                        Row(
+                        Column (
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(bottom = 0.dp), // Removed bottom padding to eliminate gap
-                            horizontalArrangement = Arrangement.SpaceEvenly
+                            verticalArrangement = Arrangement.SpaceEvenly
                         ) {
-                            StatCard("7+", "Successfully Finished Projects", "Both In Kilimani & Lavington Areas")
-                            StatCard("18+", "Years Of Being In The Market", "")
-                            StatCard("18%", "Return On Investment", "")
+                            StatCard("7+" , "Successfully And already Finished Projects", "Both In Kilimani & Lavington Areas")
+                            StatCard("18+", "Years Of Being In The Market Giving Service", "")
+                            StatCard("18%", "Return On Investment From Red Carpet Homes", "")
                             StatCard("20%", "Average price growth over the last 3 years", "")
                         }
                     }
@@ -452,7 +452,7 @@ fun ApartmentCard(apartment: Apartment, navController: NavController) {
                     modifier = Modifier.padding(bottom = 4.dp)
                 ) {
                     Text(
-                        text = "Chat with us instantly on WhatsApp to connect with an expert agent!",
+                        text = "Chat with us instantly on WhatsApp to connect with us",
                         fontSize = 12.sp,
                         color = Color(0xFF8B0000),
                         textAlign = TextAlign.Center

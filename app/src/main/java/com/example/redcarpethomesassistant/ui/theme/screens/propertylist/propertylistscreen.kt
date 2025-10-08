@@ -1,6 +1,5 @@
 package com.example.redcarpethomesassistant.ui.theme.screens.propertylist
 
-
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -9,6 +8,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -89,7 +90,21 @@ fun PropertyListScreen(navController: NavController) {
         verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Header with Home Icon and Title
+        // Red Carpet Homes Icon
+        item {
+            Image(
+                painter = painterResource(id = R.drawable.red_carpet_icon), // Ensure this exists
+                contentDescription = "Red Carpet Homes Logo",
+                modifier = Modifier
+                    .size(120.dp) // Increased size for visibility
+                    .padding(bottom = 16.dp)
+                    .background(Color.White, shape = RoundedCornerShape(8.dp)) // White background for contrast
+                    .padding(4.dp), // Padding inside the background
+                contentScale = ContentScale.Fit
+            )
+        }
+
+        // Header with Back Arrow and Title
         item {
             Row(
                 modifier = Modifier
@@ -98,14 +113,17 @@ fun PropertyListScreen(navController: NavController) {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Home Icon for Dashboard Navigation
+                // Back Arrow for Dashboard Navigation
                 Icon(
-                    painter = painterResource(id = R.drawable.home_icon), // Assuming home icon in drawable
-                    contentDescription = "Go to Dashboard",
+                    imageVector = Icons.Default.ArrowBack, // Using Material Icon as fallback
+                    // painter = painterResource(id = R.drawable.back_arrow), // Uncomment this once back_arrow is fixed
+                    contentDescription = "Back to Dashboard",
                     modifier = Modifier
                         .size(40.dp)
+                        .background(Color.White, shape = RoundedCornerShape(4.dp)) // White background for contrast
+                        .padding(4.dp)
                         .clickable { navController.navigate(ROUT_DASHBOARD) },
-                    tint = Color(0xFFFFD700) // Goldish tint to match theme
+                    tint = Color(0xFF8B0000) // Darker red for better contrast
                 )
                 Text(
                     text = "Available Lands for Sale",
@@ -136,7 +154,7 @@ fun PropertyListScreen(navController: NavController) {
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "  We have premium land options tailored to your needs.",
+                    text = "We have premium land options tailored to your needs.",
                     fontSize = 14.sp,
                     color = Color.White,
                     textAlign = TextAlign.Center

@@ -35,5 +35,6 @@ fun AppNavHost(
         composable(ROUT_PROFILE) { ProfileScreen(navController) }
         composable(ROUT_PROPERTYLIST) { PropertyListScreen(navController) }
         composable(ROUT_CONTACT) { ContactScreen(navController) }
+        composable(ROUT_PRODUCTVIEWMDEL) { ContactScreen(navController) }
     }
 }
