@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -25,6 +26,9 @@ import com.example.redcarpethomesassistant.R
 import com.example.redcarpethomesassistant.navigation.ROUT_HOME
 import com.example.redcarpethomesassistant.navigation.ROUT_PROFILE
 import com.example.redcarpethomesassistant.navigation.ROUT_PROPERTYLIST
+import com.example.redcarpethomesassistant.navigation.ROUT_CHATBOT
+import com.example.redcarpethomesassistant.navigation.ROUT_NOTIFICATION
+import com.example.redcarpethomesassistant.navigation.ROUT_NOTIFICATION
 
 @Composable
 fun DashboardScreen(navController: NavController) {
@@ -33,97 +37,39 @@ fun DashboardScreen(navController: NavController) {
             .fillMaxSize()
             .background(Color(0xFF8B0000)) // Dark red background
     ) {
-        // Red Carpet Homes icon (top, larger for prominence)
+        // Red Carpet Homes icon (top center)
         Image(
-            painter = painterResource(id = R.drawable.red_carpet_icon), // Add to res/drawable
+            painter = painterResource(id = R.drawable.red_carpet_icon),
             contentDescription = "Red Carpet Homes Icon",
             modifier = Modifier
-                .fillMaxWidth(0.8f) // Increased width proportion
-                .height(150.dp) // Increased height
+                .fillMaxWidth(0.8f)
+                .height(150.dp)
                 .align(Alignment.TopCenter)
-                .padding(top = 32.dp)
+                .background(Color.White, shape = RoundedCornerShape(8.dp))
+                .padding(top = 34.dp)
                 .clip(RoundedCornerShape(8.dp)),
             contentScale = ContentScale.Fit,
             alpha = 0.8f
         )
 
-        // Content overlay
-        Column(
+        // Chatbot Icon (top left)
+        IconButton(
+            onClick = { navController.navigate(ROUT_CHATBOT) },
             modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+                .align(Alignment.TopStart)
+                .padding(16.dp)
+                .size(48.dp)
+                .clip(CircleShape)
+                .background(Color(0xFFFFD700)) // Gold background
         ) {
-            // Title
-            Text(
-                text = "The Red Carpet Homes",
-                fontSize = 28.sp,
-                color = Color(0xFFFFD700), // Gold
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(bottom = 16.dp)
+            Image(
+                painter = painterResource(id = R.drawable.chatbot_icon), // <-- Your drawable icon
+                contentDescription = "Chatbot",
+                modifier = Modifier.size(28.dp)
             )
-
-            // Welcome Message (from website)
-            Text(
-                text = "Which dream fits you best?",
-                fontSize = 24.sp,
-                color = Color.White,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(bottom = 48.dp)
-            )
-
-            // Cards with Goldish Color for Options
-            Column(
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(80.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .clickable { navController.navigate("$ROUT_HOME?type=rental") }, // Navigate to built apartments
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFFD700)) // Goldish color
-                ) {
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        Text(
-                            text = "Rent an Apartment",
-                            fontSize = 18.sp,
-                            color = Color(0xFF8B0000), // Red text
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(80.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .clickable { navController.navigate("$ROUT_PROPERTYLIST?type=land") }, // Navigate to land countrywide
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFFD700)) // Goldish color
-                ) {
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        Text(
-                            text = "Buy Land & Invest",
-                            fontSize = 18.sp,
-                            color = Color(0xFF8B0000), // Red text
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-            }
         }
 
-        // Profile Icon (top right, circular for avatar look)
+        // Profile Icon (top right)
         IconButton(
             onClick = { navController.navigate(ROUT_PROFILE) },
             modifier = Modifier
@@ -134,22 +80,105 @@ fun DashboardScreen(navController: NavController) {
                 .background(Color(0xFFFFD700)) // Gold background
         ) {
             Icon(
-                imageVector = Icons.Default.Person, // Material Design profile icon
+                imageVector = Icons.Default.Person,
                 contentDescription = "Profile",
-                tint = Color(0xFF8B0000), // Red tint
+                tint = Color(0xFF8B0000),
                 modifier = Modifier.size(32.dp)
             )
         }
 
-        // Land/Building Image at Bottom
+        // Notifications Icon (bottom left)
+        IconButton(
+            onClick = { navController.navigate(ROUT_NOTIFICATION) },
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(16.dp)
+                .size(48.dp)
+                .clip(CircleShape)
+                .background(Color(0xFFFFD700)) // Gold background
+        ) {
+            Icon(
+                imageVector = Icons.Default.Notifications,
+                contentDescription = "Notifications",
+                tint = Color(0xFF8B0000),
+                modifier = Modifier.size(32.dp)
+            )
+        }
+
+        // Center content
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "The Red Carpet Homes",
+                fontSize = 28.sp,
+                color = Color(0xFFFFD700),
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+
+            Text(
+                text = "Which dream fits you best?",
+                fontSize = 24.sp,
+                color = Color.White,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(bottom = 48.dp)
+            )
+
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(80.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .clickable { navController.navigate("$ROUT_HOME?type=rental") },
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFFD700))
+                ) {
+                    Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                        Text(
+                            text = "Rent an Apartment",
+                            fontSize = 18.sp,
+                            color = Color(0xFF8B0000),
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(80.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .clickable { navController.navigate("$ROUT_PROPERTYLIST?type=land") },
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFFD700))
+                ) {
+                    Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                        Text(
+                            text = "Buy Land & Invest",
+                            fontSize = 18.sp,
+                            color = Color(0xFF8B0000),
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+        }
+
+        // Land/Building image at bottom
         Image(
-            painter = painterResource(id = R.drawable.land_building), // Add Kitengela land/building photo to res/drawable
+            painter = painterResource(id = R.drawable.land_building),
             contentDescription = "Land Preview",
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp) // Increased height for prominence
+                .height(200.dp)
                 .align(Alignment.BottomCenter)
-                .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp, bottomEnd = 0.dp, bottomStart = 0.dp)),
+                .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)),
             contentScale = ContentScale.Crop,
             alpha = 0.4f
         )

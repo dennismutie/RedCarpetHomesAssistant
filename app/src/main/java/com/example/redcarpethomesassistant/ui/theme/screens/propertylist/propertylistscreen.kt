@@ -1,5 +1,8 @@
+// Updated PropertyListScreen.kt - Reverted to auth-based single-note save (no email prompt)
 package com.example.redcarpethomesassistant.ui.theme.screens.propertylist
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -7,24 +10,35 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.runtime.Composable
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.redcarpethomesassistant.R
+import com.example.redcarpethomesassistant.data.AuthRepository
+import com.example.redcarpethomesassistant.data.SharedReminders
 import com.example.redcarpethomesassistant.navigation.ROUT_DASHBOARD
 import com.example.redcarpethomesassistant.navigation.ROUT_CONTACT
+import com.example.redcarpethomesassistant.ui.theme.screens.notifications.NotificationItem
+import kotlinx.coroutines.launch
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import android.widget.Toast
+import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.CoroutineScope
 
 data class Property(
     val id: String,
@@ -37,8 +51,14 @@ data class Property(
     val imageResId: Int // Local drawable resource ID
 )
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun PropertyListScreen(navController: NavController) {
+    val authRepo = remember { AuthRepository() }
+    val coroutineScope = rememberCoroutineScope()
+    val userId by SharedReminders.userId.collectAsState(initial = null)
+    val context = LocalContext.current
+
     val landProperties = listOf(
         Property(
             id = "kitengela",
@@ -116,7 +136,6 @@ fun PropertyListScreen(navController: NavController) {
                 // Back Arrow for Dashboard Navigation
                 Icon(
                     imageVector = Icons.Default.ArrowBack, // Using Material Icon as fallback
-                    // painter = painterResource(id = R.drawable.back_arrow), // Uncomment this once back_arrow is fixed
                     contentDescription = "Back to Dashboard",
                     modifier = Modifier
                         .size(40.dp)
@@ -206,17 +225,39 @@ fun PropertyListScreen(navController: NavController) {
 
         // Vertical Scrollable List of Land Properties
         items(landProperties) { property ->
-            LandPropertyCard(property, navController)
+            LandPropertyCard(
+                property = property,
+                navController = navController,
+                sharedReminders = SharedReminders.reminders,
+                authRepo = authRepo,
+                userId = userId,
+                coroutineScope = coroutineScope,
+                context = context
+            )
         }
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun LandPropertyCard(property: Property, navController: NavController) {
+fun LandPropertyCard(
+    property: Property,
+    navController: NavController,
+    sharedReminders: SnapshotStateList<NotificationItem>,
+    authRepo: AuthRepository,
+    userId: String?,
+    coroutineScope: CoroutineScope,
+    context: android.content.Context
+) {
+    var showDialog by remember { mutableStateOf(false) }
+    var reminderNote by remember { mutableStateOf("") }
+    val currentTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
+    val isReminded = sharedReminders.any { it.id == property.id }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(350.dp) // Maintained height
+            .height(500.dp) // Further increased height to ensure no text is cut out
             .clickable { navController.navigate(ROUT_CONTACT) }, // Entire card navigable
         colors = CardDefaults.cardColors(containerColor = Color(0xFFFFD700)) // Goldish background
     ) {
@@ -282,6 +323,55 @@ fun LandPropertyCard(property: Property, navController: NavController) {
                     fontWeight = FontWeight.Bold
                 )
             }
+
+            // Set Reminder to Purchase Button - Added below Contact for Price
+            Spacer(modifier = Modifier.height(8.dp))
+            Button(
+                onClick = {
+                    if (userId == null) {
+                        Toast.makeText(context, "Please log in to set reminders", Toast.LENGTH_SHORT).show()
+                        // TODO: Navigate to login if needed
+                        return@Button
+                    }
+                    if (isReminded) {
+                        // Cancel reminder - Delete from Firestore and local
+                        coroutineScope.launch {
+                            try {
+                                authRepo.deleteReminder(userId, property.id)
+                                sharedReminders.removeAll { it.id == property.id }
+                                Toast.makeText(context, "Reminder deleted", Toast.LENGTH_SHORT).show()
+                            } catch (e: Exception) {
+                                Toast.makeText(context, "Failed to delete reminder: ${e.message}", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    } else {
+                        // Show dialog to type note
+                        showDialog = true
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (isReminded) Color.Green else Color(0xFF8B0000)
+                ),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Notifications,
+                    contentDescription = if (isReminded) "Reminder Set" else "Set Reminder",
+                    modifier = Modifier.size(20.dp),
+                    tint = Color.White
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = if (isReminded) "Reminder Active" else "Set Reminder to Purchase",
+                    fontSize = 14.sp,
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
             Spacer(modifier = Modifier.height(8.dp))
 
             // Amenities as Plain Text
@@ -300,5 +390,61 @@ fun LandPropertyCard(property: Property, navController: NavController) {
                 }
             }
         }
+    }
+
+    // Dialog for typing reminder note
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text("Set Reminder Note") },
+            text = {
+                Column {
+                    Text("Type a note for your reminder:")
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = reminderNote,
+                        onValueChange = { reminderNote = it },
+                        label = { Text("Reminder Note") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (reminderNote.isNotBlank() && userId != null) {
+                            val newItem = NotificationItem(
+                                id = property.id, // Use property ID as reminder ID
+                                title = "Reminder for ${property.title}",
+                                propertyTitle = property.title,
+                                propertyType = "Land",
+                                reminderTime = currentTime,
+                                reminderNote = reminderNote
+                            )
+                            coroutineScope.launch {
+                                try {
+                                    authRepo.saveReminder(userId, newItem)
+                                    sharedReminders.add(newItem)
+                                    Toast.makeText(context, "Reminder saved", Toast.LENGTH_SHORT).show()
+                                } catch (e: Exception) {
+                                    Toast.makeText(context, "Failed to save reminder: ${e.message}", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        } else if (userId == null) {
+                            Toast.makeText(context, "Please log in to set reminders", Toast.LENGTH_SHORT).show()
+                        }
+                        showDialog = false
+                        reminderNote = ""
+                    }
+                ) {
+                    Text("Set Reminder")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }

@@ -1,10 +1,12 @@
+// Updated HomeScreen.kt - Use SnapshotStateList for SharedReminders
 package com.example.redcarpethomesassistant.ui.theme.screens.home
-
 
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -15,9 +17,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,10 +34,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import coil.compose.rememberAsyncImagePainter
 import com.example.redcarpethomesassistant.R
+import com.example.redcarpethomesassistant.data.SharedReminders
 import com.example.redcarpethomesassistant.navigation.ROUT_CONTACT
 import com.example.redcarpethomesassistant.navigation.ROUT_DASHBOARD
+import com.example.redcarpethomesassistant.ui.theme.screens.notifications.NotificationItem
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 data class Apartment(
     val id: String,
@@ -46,6 +53,7 @@ data class Apartment(
     val imageUrl: String
 )
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HomeScreen(navController: NavController) {
     // Email launcher for Gmail/Email app
@@ -132,6 +140,7 @@ fun HomeScreen(navController: NavController) {
                 contentDescription = "Red Carpet Homes Icon",
                 modifier = Modifier
                     .size(80.dp) // Smaller size for top icon
+                    .background(Color.White, shape = RoundedCornerShape(8.dp))
                     .clip(RoundedCornerShape(8.dp)),
                 contentScale = ContentScale.Fit
             )
@@ -296,7 +305,11 @@ fun HomeScreen(navController: NavController) {
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     items(apartments) { apartment ->
-                        ApartmentCard(apartment, navController)
+                        ApartmentCard(
+                            apartment = apartment,
+                            navController = navController,
+                            sharedReminders = SharedReminders.reminders
+                        )
                     }
                 }
             }
@@ -355,12 +368,22 @@ fun CheckboxWithText(text: String) {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun ApartmentCard(apartment: Apartment, navController: NavController) {
+fun ApartmentCard(
+    apartment: Apartment,
+    navController: NavController,
+    sharedReminders: SnapshotStateList<NotificationItem>
+) {
+    var showDialog by remember { mutableStateOf(false) }
+    var reminderNote by remember { mutableStateOf("") }
+    val isReminded = sharedReminders.any { it.id == apartment.id }
+    val currentTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
+
     Card(
         modifier = Modifier
             .width(300.dp)
-            .height(700.dp) // Uniform height for all cards, tall enough for full content
+            .height(750.dp) // Increased height to fit new button
             .clickable { navController.navigate(ROUT_CONTACT) },
         colors = CardDefaults.cardColors(containerColor = Color(0xFFFFD700))
     ) {
@@ -480,7 +503,87 @@ fun ApartmentCard(apartment: Apartment, navController: NavController) {
                     color = Color(0xFF8B0000),
                     textAlign = TextAlign.Center
                 )
+                // Reminder Button
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(
+                    onClick = {
+                        if (isReminded) {
+                            // Cancel reminder - Remove from shared list
+                            sharedReminders.removeAll { it.id == apartment.id }
+                        } else {
+                            // Show dialog to type note
+                            showDialog = true
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(40.dp)
+                        .clip(RoundedCornerShape(8.dp)),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (isReminded) Color.Green else Color(0xFF8B0000)
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Notifications,
+                        contentDescription = if (isReminded) "Reminder Set" else "Set Reminder",
+                        modifier = Modifier.size(16.dp),
+                        tint = Color.White
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = if (isReminded) "Reminder Active" else "Set Reminder to Purchase",
+                        color = Color.White,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
         }
+    }
+
+    // Dialog for typing reminder note
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text("Set Reminder Note") },
+            text = {
+                Column {
+                    Text("Type a note for your reminder:")
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = reminderNote,
+                        onValueChange = { reminderNote = it },
+                        label = { Text("Reminder Note") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (reminderNote.isNotBlank()) {
+                            val newItem = NotificationItem(
+                                id = apartment.id,
+                                title = "Reminder for ${apartment.title}",
+                                propertyTitle = apartment.title,
+                                propertyType = "Apartment",
+                                reminderTime = currentTime,
+                                reminderNote = reminderNote
+                            )
+                            sharedReminders.add(newItem)
+                        }
+                        showDialog = false
+                        reminderNote = ""
+                    }
+                ) {
+                    Text("Set Reminder")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }
