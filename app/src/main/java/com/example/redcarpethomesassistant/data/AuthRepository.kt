@@ -1,6 +1,7 @@
-// New file: data/AuthRepository.kt - Handles Firebase Auth and Firestore for user-specific reminders
+// Updated file: data/AuthRepository.kt - Reverted to default (1-hour expiration); added logging for debugging
 package com.example.redcarpethomesassistant.data
 
+import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.example.redcarpethomesassistant.ui.theme.screens.notifications.NotificationItem
@@ -52,9 +53,12 @@ class AuthRepository @Inject constructor(
 
     suspend fun sendPasswordReset(email: String): Result<Unit> {
         return try {
+            Log.d("AuthRepository", "Sending password reset to $email") // Debug log
             auth.sendPasswordResetEmail(email).await()
+            Log.d("AuthRepository", "Password reset email sent successfully to $email") // Debug log
             Result.success(Unit)
         } catch (e: Exception) {
+            Log.e("AuthRepository", "Error sending password reset to $email: ${e.message}", e) // Error log
             Result.failure(e)
         }
     }

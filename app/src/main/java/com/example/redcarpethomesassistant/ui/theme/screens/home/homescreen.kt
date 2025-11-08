@@ -4,6 +4,7 @@ package com.example.redcarpethomesassistant.ui.theme.screens.home
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
@@ -27,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -56,6 +58,7 @@ data class Apartment(
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HomeScreen(navController: NavController) {
+    val context = LocalContext.current
     // Email launcher for Gmail/Email app
     val emailLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -85,7 +88,7 @@ fun HomeScreen(navController: NavController) {
         ),
         Apartment(
             id = "westlands",
-            title = "1-Bedroom Apartment in Westlands",
+            title = "1-Bedroom Apartment Westlands",
             location = "Westlands, Nairobi",
             size = "80 sqm",
             priceKes = 60000.0, // Monthly
@@ -278,7 +281,7 @@ fun HomeScreen(navController: NavController) {
                 Button(
                     onClick = {
                         val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
-                            data = Uri.parse("mailto:rachael@theredcarpethomes.co.ke")
+                            data = Uri.parse("mailto:info@theredcarpethomes.co.ke")
                         }
                         emailLauncher.launch(Intent.createChooser(emailIntent, "Send email"))
                     },
@@ -289,7 +292,7 @@ fun HomeScreen(navController: NavController) {
                         .clip(RoundedCornerShape(12.dp)),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF8B0000)) // Dark red to match theme
                 ) {
-                    Text("Email rachael@theredcarpethomes.co.ke", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text("Email info@theredcarpethomes.co.ke", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 }
 
                 // Apartment Listings
@@ -308,7 +311,8 @@ fun HomeScreen(navController: NavController) {
                         ApartmentCard(
                             apartment = apartment,
                             navController = navController,
-                            sharedReminders = SharedReminders.reminders
+                            sharedReminders = SharedReminders.reminders,
+                            context = context
                         )
                     }
                 }
@@ -373,7 +377,8 @@ fun CheckboxWithText(text: String) {
 fun ApartmentCard(
     apartment: Apartment,
     navController: NavController,
-    sharedReminders: SnapshotStateList<NotificationItem>
+    sharedReminders: SnapshotStateList<NotificationItem>,
+    context: android.content.Context
 ) {
     var showDialog by remember { mutableStateOf(false) }
     var reminderNote by remember { mutableStateOf("") }
@@ -498,7 +503,7 @@ fun ApartmentCard(
                     Text("Connect Now", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
                 Text(
-                    text = "Prefer email? Reach us at rachael@theredcarpethomes.co.ke for more details.",
+                    text = "Prefer email? Reach us at info@theredcarpethomes.co.ke for more details.",
                     fontSize = 10.sp,
                     color = Color(0xFF8B0000),
                     textAlign = TextAlign.Center
@@ -510,6 +515,7 @@ fun ApartmentCard(
                         if (isReminded) {
                             // Cancel reminder - Remove from shared list
                             sharedReminders.removeAll { it.id == apartment.id }
+                            Toast.makeText(context, "Reminder deleted", Toast.LENGTH_SHORT).show()
                         } else {
                             // Show dialog to type note
                             showDialog = true
@@ -571,6 +577,7 @@ fun ApartmentCard(
                                 reminderNote = reminderNote
                             )
                             sharedReminders.add(newItem)
+                            Toast.makeText(context, "Reminder Successfully saved", Toast.LENGTH_SHORT).show()
                         }
                         showDialog = false
                         reminderNote = ""

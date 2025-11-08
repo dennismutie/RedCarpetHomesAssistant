@@ -1,22 +1,19 @@
-// Updated NotificationScreen.kt - Fixed over-fetching; now only fetches if list empty on user change, with manual refresh for testing
+// Updated NotificationScreen.kt - Reverted to conditional load (only if empty) to preserve local saves; always loads on login via AuthRepo
 package com.example.redcarpethomesassistant.ui.theme.screens.notifications
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -50,17 +47,17 @@ fun NotificationScreen(navController: NavController) {
     val context = LocalContext.current
     val userId by SharedReminders.userId.collectAsState(initial = null)
 
-    // Fetch from shared list (reactive)
-    val notifications by remember { derivedStateOf { SharedReminders.reminders } }
+    // Direct use of SnapshotStateList (observable, no derivedStateOf needed)
+    val notifications = SharedReminders.reminders
     var showDeleteDialog by remember { mutableStateOf(false) }
     var notificationToDelete by remember { mutableStateOf<NotificationItem?>(null) }
-    var isRefreshing by remember { mutableStateOf(false) }
 
-    // Auto-fetch ONLY if user changes AND list is empty (avoids overwriting local saves)
+    // Fixed: Load ONLY if list is empty on userId change (preserves local saves; login already loads from server)
     LaunchedEffect(userId) {
         userId?.let { uid ->
             if (SharedReminders.reminders.isEmpty()) {
                 try {
+                    Log.d("NotificationScreen", "Loading reminders for user: $uid (list was empty)") // Debug log
                     val reminders = authRepo.loadUserReminders(uid)
                     SharedReminders.setUser(uid, reminders)
                     if (reminders.isNotEmpty()) {
@@ -69,8 +66,11 @@ fun NotificationScreen(navController: NavController) {
                         Toast.makeText(context, "No previous reminders found for your account", Toast.LENGTH_SHORT).show()
                     }
                 } catch (e: Exception) {
+                    Log.e("NotificationScreen", "Load failed for user $uid: ${e.message}", e)
                     Toast.makeText(context, "Failed to load reminders: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
+            } else {
+                Log.d("NotificationScreen", "Skipping load for user: $uid (local list has ${SharedReminders.reminders.size} items)") // Debug log
             }
         }
     }
@@ -78,7 +78,7 @@ fun NotificationScreen(navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFFFD700)), // Gold background like login
+            .background(Color(0xFF4CAF50)), // Green background (Material Green)
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -87,17 +87,16 @@ fun NotificationScreen(navController: NavController) {
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp) // Reduced from 24.dp for tighter overall spacing
         ) {
-            // Logo (matching login)
+            // Logo (matching login, but with reduced bottom padding for better fit and less gap)
             Image(
                 painter = painterResource(id = R.drawable.red_carpet_icon),
                 contentDescription = "Red Carpet Homes Logo",
                 modifier = Modifier
                     .size(120.dp)
-                    .padding(bottom = 16.dp)
                     .background(Color.White, shape = RoundedCornerShape(8.dp))
-                    .padding(4.dp),
+                    .padding(4.dp), // Removed bottom padding; rely on spacedBy for gaps
                 contentScale = ContentScale.Fit
             )
 
@@ -115,24 +114,7 @@ fun NotificationScreen(navController: NavController) {
                 fontSize = 16.sp
             )
 
-            // Back to Dashboard Button (matching login)
-            Button(
-                onClick = { navController.navigate(ROUT_DASHBOARD) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF8B0000)), // Deep red
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Text(
-                    text = "Back to Dashboard",
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp
-                )
-            }
-
-            // Notifications List Card (matching login card style)
+            // Notifications List Card (matching login card style) - Moved up, Back button now below
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -145,40 +127,7 @@ fun NotificationScreen(navController: NavController) {
                         .fillMaxSize()
                         .padding(16.dp)
                 ) {
-                    // Refresh Button at top for manual sync (useful for testing saves)
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 8.dp),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        IconButton(
-                            onClick = {
-                                if (isRefreshing) return@IconButton
-                                isRefreshing = true
-                                coroutineScope.launch {
-                                    userId?.let { uid ->
-                                        try {
-                                            val reminders = authRepo.loadUserReminders(uid)
-                                            SharedReminders.setUser(uid, reminders)
-                                            Toast.makeText(context, "Refreshed: ${reminders.size} reminders", Toast.LENGTH_SHORT).show()
-                                        } catch (e: Exception) {
-                                            Toast.makeText(context, "Refresh failed: ${e.message}", Toast.LENGTH_SHORT).show()
-                                        } finally {
-                                            isRefreshing = false
-                                        }
-                                    }
-                                }
-                            },
-                            enabled = !isRefreshing
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Refresh,
-                                contentDescription = "Refresh Reminders",
-                                tint = Color.White
-                            )
-                        }
-                    }
+                    // Removed refresh button - auto-sync only on load
 
                     if (notifications.isEmpty()) {
                         Box(
@@ -196,7 +145,7 @@ fun NotificationScreen(navController: NavController) {
                                     fontWeight = FontWeight.Medium
                                 )
                                 Text(
-                                    text = "Your saved reminders will appear here. Try the refresh button if you just saved one.",
+                                    text = "Your saved reminders will appear here.",
                                     color = Color.White,
                                     fontSize = 14.sp,
                                     textAlign = TextAlign.Center,
@@ -209,7 +158,10 @@ fun NotificationScreen(navController: NavController) {
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                             modifier = Modifier.fillMaxSize()
                         ) {
-                            itemsIndexed(notifications) { index, notification ->
+                            items(
+                                items = notifications,
+                                key = { notification -> notification.id } // Stable key by ID
+                            ) { notification ->
                                 NotificationItemCard(
                                     notification = notification,
                                     onDelete = {
@@ -221,6 +173,23 @@ fun NotificationScreen(navController: NavController) {
                         }
                     }
                 }
+            }
+
+            // Back to Dashboard Button (matching login) - Moved below Card for better flow
+            Button(
+                onClick = { navController.navigate(ROUT_DASHBOARD) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF8B0000)), // Deep red
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text(
+                    text = "Back to Dashboard",
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
+                )
             }
 
             // Delete Confirmation Dialog - Now syncs to Firestore
@@ -246,19 +215,29 @@ fun NotificationScreen(navController: NavController) {
                     confirmButton = {
                         Button(
                             onClick = {
+                                // Fixed: Launch coroutine but close dialog INSIDE after operation (syncs timing)
                                 coroutineScope.launch {
                                     userId?.let { uid ->
                                         try {
+                                            Log.d("NotificationScreen", "Attempting to delete reminder ID: ${notificationToDelete!!.id} for user: $uid") // Debug log
                                             authRepo.deleteReminder(uid, notificationToDelete!!.id)
-                                            SharedReminders.reminders.remove(notificationToDelete!!)
+                                            SharedReminders.removeReminder(notificationToDelete!!.id)
                                             Toast.makeText(context, "Reminder deleted from your account", Toast.LENGTH_SHORT).show()
                                         } catch (e: Exception) {
-                                            Toast.makeText(context, "Failed to delete: ${e.message}", Toast.LENGTH_SHORT).show()
+                                            Log.e("NotificationScreen", "Delete failed for ID ${notificationToDelete!!.id}: ${e::class.simpleName} - ${e.message}", e) // Detailed log
+                                            val errorMsg = "${e::class.simpleName}: ${e.message ?: "Unknown error (check logs)"}"
+                                            Toast.makeText(context, "Failed to delete: $errorMsg", Toast.LENGTH_LONG).show()
+                                        } finally {
+                                            // Close dialog AFTER operation completes (prevents recomposition desync)
+                                            showDeleteDialog = false
+                                            notificationToDelete = null
                                         }
+                                    } ?: run {
+                                        Toast.makeText(context, "User ID not available - cannot delete", Toast.LENGTH_SHORT).show()
+                                        showDeleteDialog = false
+                                        notificationToDelete = null
                                     }
                                 }
-                                showDeleteDialog = false
-                                notificationToDelete = null
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF8B0000)),
                             shape = RoundedCornerShape(12.dp)

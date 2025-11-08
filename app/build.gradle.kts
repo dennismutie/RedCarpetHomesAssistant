@@ -64,6 +64,7 @@ dependencies {
     implementation(libs.androidx.datastore.core.android)
     implementation(libs.firebase.inappmessaging.display)
     implementation(libs.firebase.storage)
+    implementation(libs.firebase.crashlytics.buildtools)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

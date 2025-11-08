@@ -1,6 +1,5 @@
 package com.example.redcarpethomesassistant.ui.theme.screens.contacts
 
-
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.Image
@@ -29,7 +28,7 @@ import com.example.redcarpethomesassistant.navigation.ROUT_DASHBOARD
 fun ContactScreen(navController: NavController) {
     val context = LocalContext.current
     val phoneNumber = "0706127197"
-    val email = "rachael@theredcarpethomes.co.ke"
+    val email = "info@theredcarpethomes.co.ke"
     val whatsappUrl = "https://wa.me/254$phoneNumber?text=Interested in properties from Red Carpet Homes"
 
     Box(

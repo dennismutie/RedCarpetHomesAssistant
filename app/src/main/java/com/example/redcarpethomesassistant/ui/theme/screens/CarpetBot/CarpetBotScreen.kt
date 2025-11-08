@@ -13,7 +13,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -41,7 +43,7 @@ fun RedCarpetChatbotScreen() {
         // === Background Logo ===
         Image(
             painter = painterResource(id = R.drawable.red_carpet_icon), // Your logo file
-            contentDescription = "Red Carpet Homes Logo Background",
+            contentDescription = "The Red Carpet Homes Logo Background",
             modifier = Modifier
                 .fillMaxSize(1f) // Full screen size
                 .align(Alignment.Center)
@@ -62,12 +64,12 @@ fun RedCarpetChatbotScreen() {
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.red_carpet_icon),
-                    contentDescription = "Red Carpet Homes Logo",
+                    contentDescription = "The Red Carpet Homes Logo",
                     modifier = Modifier.size(70.dp) // Increased size for better visibility
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Red Carpet Homes Assistant",
+                    text = "The Red Carpet Homes Assistant",
                     style = TextStyle(
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
@@ -101,11 +103,12 @@ fun RedCarpetChatbotScreen() {
                     onValueChange = {
                         if (it.text.length <= 1000) inputValue = it
                     },
-                    textStyle = TextStyle(fontSize = 16.sp, color = Color.Black),
+                    textStyle = TextStyle(fontSize = 16.sp, color = Color.White),
+                    cursorBrush = SolidColor(Color.Red),
                     modifier = Modifier
                         .weight(1f)
                         .clip(RoundedCornerShape(12.dp))
-                        .background(Color.White)
+                        .background(Color.DarkGray)
                         .padding(12.dp)
                 )
 
@@ -167,16 +170,16 @@ fun getRealEstateResponse(input: String): String {
 
     return when {
         listOf("hi", "hello", "hey").any { it in lowercase } ->
-            "Hello 👋! Welcome to *Red Carpet Homes*.\nWe help you find premium homes and land across Kenya. Are you interested in *buying a home* or *investing in land* or *knowing about Us*?"
+            "Hello 👋! Welcome to *The Red Carpet Homes*.\nWe help you find premium homes and land across Kenya. Are you interested in *buying a home* or *investing in land* or *knowing about Us*?"
 
         "about" in lowercase || "company" in lowercase ->
-            "Red Carpet Homes is a trusted real estate company founded by *Rachael Ndunge*. We specialize in selling premium land and modern apartments across Kenya — offering flexible payment plans, ready title deeds, and mortgage assistance."
+            "The Red Carpet Homes is a trusted real estate company founded by *Rachael Ndunge*. We specialize in selling premium land and modern apartments across Kenya — offering flexible payment plans, ready title deeds, and mortgage assistance."
 
         "land" in lowercase || "plot" in lowercase ->
             "🌍 Available land in *Kitengela, Juja Farm, Watamu, Diani, Riruta, Roysambu, Kiambu,* and *Fedha.*\n\n✅ All land comes with *ready title deeds*\n💧 Water & ⚡ Electricity on site\n🚗 All-weather access roads\n🏫 Schools and malls nearby\n\n💰 Prices start from *Ksh 1.25M* per 1/8 acre.\nWould you like to view *full price details* or *book a site visit*?"
 
         "price" in lowercase || "cost" in lowercase ->
-            "💰 *Land*: From *Ksh 1.25M* (1/8 acre)\n🏘 *Apartments*: From *Ksh 7.8M* (1–3 bedroom)\n\nFor full pricing, visit 🌐 www.redcarpethomes.co.ke or chat with us on WhatsApp 👉 +254 706 127 197."
+            "💰 *Land*: From *Ksh 1.25M* (1/8 acre)\n🏘 *Apartments*: From *Ksh 7.8M* (1–3 bedroom)\n\nFor full price, visit 🌐 www.redcarpethomes.co.ke or chat with us on WhatsApp 👉 +254 706 127 197."
 
         "apartment" in lowercase || "house" in lowercase || "home" in lowercase ->
             "🏡 Available apartments in *Runda, Lavington, Kilimani, Kileleshwa, Westlands*.\n\nFeatures:\n🛏 Bedrooms (1–3)\n🚿 Bathrooms\n🛋 Living area & common area\n🌇 Balcony with views\n\nNearby:\n🛍 Shopping Centres, 🍴 Restaurants, 🏫 Schools, 🏥 Hospitals, ⛽ Petrol Stations.\n\nWould you like me to *share available units* in a preferred area?"
@@ -185,15 +188,15 @@ fun getRealEstateResponse(input: String): String {
             "Currently, we have *modern units in Kilimani, Westlands, and Runda*.\nEach comes with modern finishes and great views.\nFor complete listings, visit 🌐 www.redcarpethomes.co.ke or text us on WhatsApp 👉 +254 706 127 197."
 
         "visit" in lowercase || "view" in lowercase || "book" in lowercase ->
-            "You can easily schedule a viewing 👀.\n📞 WhatsApp us at +254 706 127 197\n📧 Email: rachael@theredcarpethomes.co.ke\n🌐 Visit: www.redcarpethomes.co.ke"
+            "You can easily schedule a viewing 👀.\n📞 WhatsApp us at +254 706 127 197\n📧 Email: info@theredcarpethomes.co.ke\n🌐 Visit: www.redcarpethomes.co.ke"
 
         "contact" in lowercase || "call" in lowercase || "whatsapp" in lowercase || "email" in lowercase ->
-            "📞 WhatsApp: +254 706 127 197\n📧 Email: rachael@theredcarpethomes.co.ke\n🌐 Visit: www.redcarpethomes.co.ke"
+            "📞 WhatsApp: +254 706 127 197\n📧 Email: info@theredcarpethomes.co.ke\n🌐 Visit: www.redcarpethomes.co.ke"
 
         "payment" in lowercase || "mortgage" in lowercase ->
             "💳 We offer flexible payment plans and mortgage assistance for both land and apartments. You can begin with a deposit and clear in installments."
 
         else ->
-            "I'm your *Red Carpet Homes Assistant* 😊.\nYou can ask about available *land*, *apartments*, *prices*, or how to *schedule a visit*."
+            "I'm your *The Red Carpet Homes Assistant* 😊.\nYou can ask about available *land*, *apartments*, *prices*, or how to *schedule a visit*."
     }
 }

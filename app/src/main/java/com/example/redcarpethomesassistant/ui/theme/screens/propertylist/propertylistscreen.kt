@@ -1,4 +1,3 @@
-// Updated PropertyListScreen.kt - Reverted to auth-based single-note save (no email prompt)
 package com.example.redcarpethomesassistant.ui.theme.screens.propertylist
 
 import android.os.Build
@@ -324,8 +323,27 @@ fun LandPropertyCard(
                 )
             }
 
-            // Set Reminder to Purchase Button - Added below Contact for Price
             Spacer(modifier = Modifier.height(8.dp))
+
+            // Amenities as Plain Text
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                property.amenities.forEach { amenity ->
+                    Text(
+                        text = amenity,
+                        fontSize = 12.sp,
+                        color = Color(0xFF8B0000),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Set Reminder to Purchase Button - Moved below amenities
             Button(
                 onClick = {
                     if (userId == null) {
@@ -370,24 +388,6 @@ fun LandPropertyCard(
                     color = Color.White,
                     fontWeight = FontWeight.Bold
                 )
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Amenities as Plain Text
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(2.dp)
-            ) {
-                property.amenities.forEach { amenity ->
-                    Text(
-                        text = amenity,
-                        fontSize = 12.sp,
-                        color = Color(0xFF8B0000),
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
             }
         }
     }
